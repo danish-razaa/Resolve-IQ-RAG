@@ -1,0 +1,11 @@
+Loan & EMI Policy:
+- EMI bounce charges: maximum Rs 500 per bounce as per RBI guidelines.
+- Prepayment charges: zero for floating rate loans as per RBI mandate.
+- Loan statement must be provided free of charge once a year.
+- Interest rate change under EBLR must be communicated 3 months in advance.
+- Loan foreclosure processed within 7 working days.
+- EMI discrepancy complaints resolved within 30 days.
+- CIBIL score update after loan closure: within 30 days.
+- Moratorium complaints handled as per RBI COVID circular.
+- Processing fee refund if loan not disbursed: within 14 working days.
+- NACH mandate cancellation: processed within 2 working days.

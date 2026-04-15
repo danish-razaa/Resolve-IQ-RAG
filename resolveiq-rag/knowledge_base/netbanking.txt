@@ -1,0 +1,9 @@
+Net Banking Policy:
+- Unauthorized net banking transactions: report within 3 working days for zero liability.
+- Password reset complaints resolved within 24 hours.
+- Account locked after 3 failed login attempts — unlocked via branch or phone banking.
+- Two-factor authentication (2FA) mandatory for all transactions above Rs 5000.
+- Net banking transfer limits: Rs 10 lakh per day (default).
+- IMPS transfer available 24x7, NEFT available 24x7 since 2019.
+- RTGS available 7AM-6PM on working days.
+- Failed NEFT/RTGS transactions refunded within 2 hours automatically.

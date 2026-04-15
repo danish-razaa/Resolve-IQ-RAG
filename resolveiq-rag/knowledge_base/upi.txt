@@ -1,0 +1,16 @@
+UPI Transaction Failure Policy:
+- If UPI payment fails and money is debited, the amount must be refunded within 5 business days.
+- Customer should report failed UPI transactions within 30 days.
+- Transaction ID must be provided for dispute resolution.
+- NPCI handles UPI disputes between banks.
+- If refund not received in 5 days, customer can raise complaint with bank nodal officer.
+- RBI mandates auto-reversal of failed UPI transactions within T+1 day.
+- Peak hour failures (7PM-9PM) are common due to server load.
+- Customer helpline for UPI: 18001201740
+
+UPI Dispute Resolution Steps:
+1. Check transaction status on UPI app
+2. If pending more than 1 hour, raise dispute in app
+3. Bank has 3 days to respond
+4. If unresolved, escalate to NPCI
+5. Final escalation to RBI Ombudsman after 30 days

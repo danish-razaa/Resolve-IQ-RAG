@@ -1,0 +1,11 @@
+KYC Policy:
+- KYC must be completed within 6 months of account opening.
+- Re-KYC required every 2 years for high-risk customers.
+- Re-KYC required every 8 years for medium-risk customers.
+- Re-KYC required every 10 years for low-risk customers.
+- Video KYC (V-KYC) accepted as per RBI circular 2020.
+- Account freeze due to KYC non-compliance lifted within 7 working days after submission.
+- PAN and Aadhaar mandatory for accounts above Rs 50,000 balance.
+- KYC rejection complaints resolved within 30 days.
+- Aadhaar-based eKYC is instant and paperless.
+- Documents accepted: Aadhaar, PAN, Passport, Voter ID, Driving License.

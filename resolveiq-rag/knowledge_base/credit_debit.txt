@@ -1,0 +1,13 @@
+Credit Card Dispute Policy:
+- Unauthorized transactions must be reported within 3 working days for zero liability.
+- Chargeback can be raised within 30 days of statement date.
+- Bank must resolve chargeback within 45 days.
+- Card blocked complaints resolved within 24 hours.
+- Credit limit disputes resolved within 7 working days.
+
+Debit Card / ATM Policy:
+- ATM cash not dispensed complaints: resolved in 7 working days (own bank ATM).
+- Other bank ATM disputes: resolved in 12 working days.
+- Compensation of Rs 100 per day after TAT breach.
+- Card cloning/skimming complaints: zero liability if reported within 3 days.
+- Temporary block can be done via net banking or phone banking instantly.
