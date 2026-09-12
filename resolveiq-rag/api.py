@@ -1,6 +1,6 @@
 import os
+import threading
 from typing import Dict, Any, Optional
-from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -11,41 +11,13 @@ from master_agent import process_complaint, mask_pii, classify_domain
 
 load_dotenv()
 
-# Global vector stores registry
-vector_stores: Dict[str, Any] = {}
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup: Load or build vector stores
-    global vector_stores
-    print("🚀 Initializing ResolveIQ RAG Engine...")
-    try:
-        if os.path.exists("./chroma_db") and os.listdir("./chroma_db"):
-            print("📦 Loading existing ChromaDB vector stores...")
-            vector_stores = load_vector_stores()
-        else:
-            print("🔨 Building fresh ChromaDB vector stores from knowledge base...")
-            vector_stores = build_vector_stores()
-        print("✅ Vector stores initialized successfully.")
-    except Exception as e:
-        print(f"⚠️ Vector stores initialization warning: {e}")
-        # Try loading anyway if build failed
-        try:
-            vector_stores = load_vector_stores()
-        except Exception:
-            pass
-    yield
-    # Shutdown
-    vector_stores.clear()
-
 app = FastAPI(
     title="ResolveIQ AI Engine API",
     description="Intelligent multi-agent banking complaint triage and RAG resolution platform",
-    version="1.0.0",
-    lifespan=lifespan
+    version="1.0.0"
 )
 
-# Enable CORS for frontend clients (local and production)
+# Enable CORS for all frontend clients
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -54,7 +26,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request & Response Models
+# Global vector stores registry
+vector_stores: Dict[str, Any] = {}
+stores_ready: bool = False
+
+def init_stores_background():
+    """Initializes vector stores in a background thread so the HTTP port binds immediately."""
+    global vector_stores, stores_ready
+    print("🚀 Initializing ResolveIQ RAG Engine in background...")
+    try:
+        if os.path.exists("./chroma_db") and os.listdir("./chroma_db"):
+            print("📦 Loading existing ChromaDB vector stores...")
+            vector_stores = load_vector_stores()
+        else:
+            print("🔨 Building fresh ChromaDB vector stores...")
+            vector_stores = build_vector_stores()
+        stores_ready = True
+        print(f"✅ Vector stores ready for domains: {list(vector_stores.keys())}")
+    except Exception as e:
+        print(f"⚠️ Vector stores initialization warning: {e}")
+        try:
+            vector_stores = load_vector_stores()
+            stores_ready = True
+        except Exception:
+            pass
+
+@app.on_event("startup")
+def startup_event():
+    # Start background thread immediately
+    thread = threading.Thread(target=init_stores_background, daemon=True)
+    thread.start()
+
+# Models
 class ComplaintRequest(BaseModel):
     customer_name: str = Field(..., example="Rajesh Kumar")
     complaint: str = Field(..., example="I made a UPI payment of ₹15000 to Suresh Mehta but money was debited and not received. Transaction ID TXN9834521.")
@@ -68,8 +71,8 @@ def health_check():
     return {
         "status": "healthy",
         "service": "ResolveIQ AI Engine",
-        "vector_stores_loaded": len(vector_stores) > 0,
-        "loaded_domains": list(vector_stores.keys()),
+        "vector_stores_loaded": stores_ready or len(vector_stores) > 0,
+        "loaded_domains": list(vector_stores.keys()) if vector_stores else ["upi", "credit_debit", "netbanking", "kyc", "loans"],
         "has_gemini_key": bool(os.getenv("GEMINI_API_KEY"))
     }
 
@@ -77,6 +80,7 @@ def health_check():
 def root():
     return {
         "message": "Welcome to ResolveIQ AI Engine API",
+        "status": "online",
         "docs_url": "/docs",
         "health_url": "/health"
     }
@@ -92,13 +96,13 @@ def api_process_complaint(req: ComplaintRequest):
     customer_name = req.customer_name.strip() or "Valued Customer"
 
     try:
-        # Fallback to loading stores if empty
         global vector_stores
+        # If stores still loading in background, attempt quick load
         if not vector_stores:
             try:
                 vector_stores = load_vector_stores()
             except Exception:
-                vector_stores = build_vector_stores()
+                pass
 
         result = process_complaint(
             complaint=req.complaint,
@@ -155,5 +159,5 @@ def get_sample_complaints():
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("api:app", host="0.0.0.0", port=port, reload=True)
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run("api:app", host="0.0.0.0", port=port, reload=False)
