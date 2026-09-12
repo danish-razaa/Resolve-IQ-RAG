@@ -1,38 +1,50 @@
-Go to your project folder: cd Desktop\my-project
+# ResolveIQ RAG & Multi-Agent Backend Engine
 
-Create virtual environment: python -m venv venv
-Activate virtual environment: venv\Scripts\activate
-Upgrade pip (important): python -m pip install --upgrade pip
-Install packages: pip install langchain langchain-google-genai chromadb sentence-transformers python-dotenv google-generativeai
-Verify installation: pip list
+FastAPI web service and autonomous multi-agent pipeline for intelligent banking complaint resolution.
 
-Create .env file (for your API key)
-GEMINI_API_KEY=your_api_key_here
+---
 
-Run:
+## ⚡ Architecture Flow
+
+1. **Deterministic PII Masking** (`master_agent.py`): Replaces Rupee amounts, phone numbers, account numbers, and customer names with cryptographic tokens before any third-party model call.
+2. **Gemini Domain Triage & Scoring** (`master_agent.py`): Classifies complaints into `UPI`, `CreditDebit`, `NetBanking`, `KYC`, or `Loans` with quantitative confidence ($0.0 \dots 1.0$), severity, sentiment, and priority.
+3. **Confidence Gate**: Complaints with confidence $< 0.60$ are automatically escalated to a human queue.
+4. **Domain-Isolated ChromaDB Vector Stores** (`rag_engine.py`): Retrieves relevant RBI policy circulars, auto-reversal mandates, and resolution turnaround timelines (TAT) using local `all-MiniLM-L6-v2` embeddings.
+5. **Specialized Domain Agents** (`agents/`): Generates 1-line root causes, formal personalized responses, and statutory RBI resolution time commitments.
+
+---
+
+## 🚀 Quickstart
+
+### 1. Environment Setup
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Configure Environment Variables
+Create a `.env` file:
+```env
+GEMINI_API_KEY=your_google_gemini_api_key
+```
+
+### 3. Run the FastAPI Web Service
+```bash
+uvicorn api:app --reload --port 8000
+```
+Interactive Swagger docs: `http://localhost:8000/docs`
+
+### 4. Run the Standalone CLI Test Suite
+```bash
 python main.py
+```
 
+---
 
-🔄 ResolveIQ Pipeline (How it works)
-📥 Input Complaint
-User submits a complaint (e.g., UPI failure, card fraud).
-🔐 PII Masking
-Sensitive data (amounts, phone numbers, account details, names) is masked to ensure privacy.
-🧠 AI Classification (Gemini) -> master_agent.py
-The complaint is analyzed and classified into a domain (UPI, Cards, KYC, Loans, etc.) along with:
-Severity
-Sentiment
-Priority
-📊 Confidence Check
-If AI confidence is low → complaint is escalated to human agent.
-📚 RAG (Knowledge Retrieval)
-Relevant banking guidelines and policies are fetched from domain-specific vector databases.
-🤖 Domain-Specific Agent
-The complaint + context is passed to a specialized AI agent (e.g., UPI agent, Card agent).
-💬 AI Response Generation
-Agent generates:
-Root cause
-Professional response
-RBI-compliant resolution timeline (TAT)
-✅ Final Output:
-Structured response is returned to the user with full context and classification details.
+## 📦 API Endpoints
+
+- `GET /health` — Service status, ChromaDB vector store health, and API key verification.
+- `POST /api/process-complaint` — Full multi-agent complaint triage & RAG resolution pipeline.
+- `POST /api/mask-pii` — PII sanitization utility.
+- `GET /api/sample-complaints` — Pre-loaded testing scenarios.
