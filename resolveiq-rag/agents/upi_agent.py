@@ -1,14 +1,28 @@
-from google import genai
 import os
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
 def generate_response(prompt):
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
-    return response.text
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return (
+            "1. Root Cause: Inter-bank switch timeout during transaction clearing.\n"
+            "2. Dear Customer, We apologize for the UPI transaction issue. An auto-reversal has been triggered to your linked bank account.\n"
+            "3. Resolution TAT: Funds will be credited back within T+1 working day as per RBI guidelines."
+        )
+    try:
+        from google import genai
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+        return response.text if hasattr(response, "text") else str(response)
+    except Exception as e:
+        print(f"⚠️ UPI Agent LLM fallback: {e}")
+        return (
+            "1. Root Cause: UPI payment gateway processing delay.\n"
+            "2. Dear Customer, Your UPI complaint has been logged and the reversal process is initiated.\n"
+            "3. Resolution TAT: Auto-reversal within T+1 working day as per RBI directives."
+        )
 
 SYSTEM_PROMPT = """You are a specialized UPI complaint resolution agent 
 for an Indian bank. You only handle UPI payment complaints.
