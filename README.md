@@ -26,7 +26,40 @@ ResolveIQ bridges this gap by combining **Deterministic PII Sanitization**, **LL
 | **Regulatory Compliance** | Manual SLA & TAT calculations | **Automated RBI Mandate & TAT Enforcement** |
 | **Resolution Consistency** | Varies by agent expertise | **Grounded in Verified Domain Policy Knowledge Bases** |
 | **Agent Fatigue & Duplicates** | Repetitive manual ticket responses | **Smart Incident Clustering & One-Click Bulk Resolution** |
-| **Failure Handling** | Unpredictable halluncinations | **Confidence-Gated Escalation (< 60% confidence ➔ Human)** |
+| **Failure Handling** | Unpredictable hallucinations | **Confidence-Gated Escalation (< 60% confidence ➔ Human)** |
+
+---
+
+## 💻 Technologies Used
+
+### 🧠 Artificial Intelligence & LLM Pipeline
+- **Google Gemini 2.5 Flash (`google-genai`)**: High-speed, reasoning LLM for domain classification, sentiment & severity scoring, and sub-agent draft generation.
+- **ChromaDB**: Lightweight vector database for domain-partitioned RBI policy guidelines and regulatory circular retrieval.
+- **Sentence-Transformers (`all-MiniLM-L6-v2`)**: Fast, local semantic embedding model.
+- **LangChain & Text Splitters**: Document loaders and recursive character chunkers (`RecursiveCharacterTextSplitter`).
+- **Deterministic Regex Tokenizer**: Zero-leakage in-memory PII sanitization engine for masking Indian Rupee amounts, phone numbers, account numbers, and customer names.
+
+### ⚙️ Backend Architecture
+- **Python 3.11**: Core runtime environment.
+- **FastAPI (v0.110+)**: Modern, high-performance asynchronous REST API framework.
+- **Uvicorn**: Lightning-fast ASGI web server with non-blocking lifecycle management.
+- **Pydantic (v2.0+)**: Robust schema definitions, data validation, and automated OpenAPI/Swagger documentation.
+- **Python-Dotenv**: Secure environment variable configuration management.
+
+### 🎨 Frontend & Agent Dashboard
+- **React 18**: UI component architecture with strict functional patterns.
+- **TypeScript**: Static typing for end-to-end reliability.
+- **Vite (v5.4+)**: Ultra-fast build tool and development server.
+- **Tailwind CSS (v3.4+)**: Utility-first, responsive design system.
+- **Radix UI & shadcn/ui**: Accessible, unstyled UI primitives (Dialogs, Tooltips, Toasts, Dropdowns).
+- **Recharts**: Interactive data visualizers (Daily volume trendlines, category distribution, SLA pie charts, sentiment bars).
+- **Lucide React**: Clean, modern icon set.
+- **TanStack React Query**: State management and asynchronous data fetching.
+
+### 🚀 DevOps & Deployment Manifests
+- **Docker**: Multi-stage, containerized deployment image.
+- **Render / Railway**: Native blueprint orchestration (`render.yaml`, `Procfile`).
+- **Vercel / Netlify**: Production Single Page Application (SPA) client rewrite rules (`vercel.json`, `_redirects`).
 
 ---
 
@@ -90,8 +123,7 @@ The master orchestrator prompts `gemini-2.5-flash` using strict JSON schema enfo
 
 ### 3. Partitioned ChromaDB Vector RAG Engine (`rag_engine.py`)
 Rather than maintaining a bloated, monolithic vector database, ResolveIQ isolates policies into **domain-specific vector collections** (`resolveiq_upi`, `resolveiq_credit_debit`, etc.):
-- **Embedding Model**: Local `SentenceTransformer` (`all-MiniLM-L6-v2`) for zero-cost, high-speed semantic embeddings.
-- **Chunking**: `RecursiveCharacterTextSplitter` with 300-token chunk size and 50-token overlap.
+- **Embedding Model**: Local `SentenceTransformer` (`all-MiniLM-L6-v2`) for zero-cost semantic search.
 - **Knowledge Base**: Encodes statutory RBI mandates, including:
   - UPI auto-reversal timeline ($T+1$ day) and ₹100/day delay compensation.
   - Credit card unauthorized transactions zero-liability rules ($3$-day reporting window).
@@ -160,6 +192,7 @@ A high-performance React 18 Single-Page Application (SPA):
 │   ├── api.py                        # FastAPI Async REST API service
 │   ├── master_agent.py               # PII masking, Gemini triage & agent orchestrator
 │   ├── rag_engine.py                 # ChromaDB vector store builder & retriever
+│   ├── run.py                        # Server launcher with dynamic port binding
 │   ├── main.py                       # CLI test suite for automated complaint verification
 │   ├── requirements.txt              # Python dependency manifest
 │   ├── Dockerfile                    # Container definition for cloud deployment
@@ -196,9 +229,9 @@ pip install -r requirements.txt
 echo "GEMINI_API_KEY=your_actual_gemini_api_key" > .env
 
 # 4. Start the FastAPI server
-uvicorn api:app --reload --port 8000
+python run.py
 ```
-- **API Server**: `http://localhost:8000`
+- **API Server**: `http://localhost:8000` (or configured port)
 - **Interactive Swagger Docs**: `http://localhost:8000/docs`
 - **Health Check**: `http://localhost:8000/health`
 
