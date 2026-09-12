@@ -373,3 +373,27 @@ export const analyticsData = {
     { name: "Breached", value: 4, color: "hsl(0, 84%, 60%)" },
   ],
 };
+
+export const getStoredComplaints = (): Complaint[] => {
+  try {
+    const custom = localStorage.getItem("resolveiq_custom_complaints");
+    if (custom) {
+      const parsed: Complaint[] = JSON.parse(custom);
+      return [...parsed, ...complaints];
+    }
+  } catch (e) {
+    // Ignore error
+  }
+  return complaints;
+};
+
+export const saveCustomComplaint = (newComplaint: Complaint) => {
+  try {
+    const existing = localStorage.getItem("resolveiq_custom_complaints");
+    const list: Complaint[] = existing ? JSON.parse(existing) : [];
+    localStorage.setItem("resolveiq_custom_complaints", JSON.stringify([newComplaint, ...list]));
+  } catch (e) {
+    // Ignore error
+  }
+};
+

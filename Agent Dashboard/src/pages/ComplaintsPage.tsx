@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { complaints } from "@/data/mockData";
+import { Complaint, getStoredComplaints, saveCustomComplaint } from "@/data/mockData";
+import { NewComplaintModal } from "@/components/NewComplaintModal";
+import { Sparkles, Plus } from "lucide-react";
 
 const severityDot: Record<string, string> = {
   Critical: "🔴",
@@ -12,7 +14,7 @@ const categories = ["All", "UPI", "Credit Card", "Debit/ATM", "NetBanking", "Loa
 
 type ComplaintStatus = "Open" | "In Progress" | "Seen" | "Resolved";
 
-const statusMap: Record<string, ComplaintStatus> = {
+const defaultStatusMap: Record<string, ComplaintStatus> = {
   "CMP-2024-0847": "Open",
   "CMP-2024-0846": "In Progress",
   "CMP-2024-0845": "Seen",
@@ -48,15 +50,29 @@ const statuses: ComplaintStatus[] = ["Open", "In Progress", "Seen", "Resolved"];
 
 const ComplaintsPage = () => {
   const navigate = useNavigate();
+  const [complaintList, setComplaintList] = useState<Complaint[]>([]);
+  const [statusMap, setStatusMap] = useState<Record<string, ComplaintStatus>>(defaultStatusMap);
   const [severityFilter, setSeverityFilter] = useState<string>("All");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [visibleCount, setVisibleCount] = useState(8);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const filtered = complaints.filter((c) => {
+  useEffect(() => {
+    setComplaintList(getStoredComplaints());
+  }, []);
+
+  const handleComplaintCreated = (newComplaint: Complaint) => {
+    saveCustomComplaint(newComplaint);
+    setComplaintList((prev) => [newComplaint, ...prev]);
+    setStatusMap((prev) => ({ ...prev, [newComplaint.id]: "Open" }));
+  };
+
+  const filtered = complaintList.filter((c) => {
     if (severityFilter !== "All" && c.severity !== severityFilter) return false;
     if (categoryFilter !== "All" && c.category !== categoryFilter) return false;
-    if (statusFilter !== "All" && statusMap[c.id] !== statusFilter) return false;
+    const currentStatus = statusMap[c.id] || "Open";
+    if (statusFilter !== "All" && currentStatus !== statusFilter) return false;
     return true;
   });
 
@@ -64,7 +80,20 @@ const ComplaintsPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <h2 className="text-lg font-bold text-foreground">All Complaints</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-bold text-foreground">All Complaints</h2>
+          <p className="text-xs text-muted-foreground">Manage and resolve customer complaints with AI assistance</p>
+        </div>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 hover:opacity-90 transition-opacity self-start sm:self-auto shadow-sm"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          <Plus className="h-3.5 w-3.5" />
+          Process New Complaint (Live AI)
+        </button>
+      </div>
 
       {/* Filter + Table */}
       <div className="bg-card border border-border rounded-xl">
@@ -87,7 +116,9 @@ const ComplaintsPage = () => {
 
         {/* Severity + Status Filters */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 className="text-sm font-semibold text-foreground">Complaint Feed</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            Complaint Feed <span className="text-xs text-muted-foreground font-normal">({filtered.length} total)</span>
+          </h3>
           <div className="flex items-center gap-3">
             <select
               value={statusFilter}
@@ -133,7 +164,7 @@ const ComplaintsPage = () => {
                     className="border-b border-border/50 hover:bg-secondary/40 transition-colors cursor-pointer"
                     onClick={() => navigate(`/complaints/${c.id}`)}
                   >
-                    <td className="px-4 py-3">{severityDot[c.severity]}</td>
+                    <td className="px-4 py-3">{severityDot[c.severity] || "🟡"}</td>
                     <td className="px-4 py-3 font-medium text-foreground">{c.customerName}</td>
                     <td className="px-4 py-3 text-muted-foreground">{c.complaintType}</td>
                     <td className="px-4 py-3">
@@ -177,6 +208,12 @@ const ComplaintsPage = () => {
           </div>
         )}
       </div>
+
+      <NewComplaintModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onComplaintCreated={handleComplaintCreated}
+      />
     </div>
   );
 };
