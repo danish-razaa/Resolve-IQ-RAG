@@ -222,40 +222,6 @@ npm run dev
 
 ---
 
-## 🌐 Production Deployment Guide
-
-### Deploy Backend (Render / Railway / Docker)
-
-#### Option 1: Render (Free Web Service)
-1. Sign in to [Render](https://render.com) and create a **New Web Service**.
-2. Connect your GitHub repository.
-3. Settings:
-   - **Root Directory**: `resolveiq-rag`
-   - **Runtime**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn api:app --host 0.0.0.0 --port $PORT`
-4. Environment Variables:
-   - `GEMINI_API_KEY`: `your_key_here`
-   - `PYTHON_VERSION`: `3.11.0`
-5. Click **Deploy Web Service** and copy the live URL (e.g. `https://resolveiq-api.onrender.com`).
-
----
-
-### Deploy Frontend (Vercel)
-
-1. Sign in to [Vercel](https://vercel.com) and click **Add New Project**.
-2. Select your repository.
-3. Settings:
-   - **Root Directory**: `Agent Dashboard`
-   - **Framework**: `Vite`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-4. Environment Variables:
-   - `VITE_API_BASE_URL`: `https://resolveiq-api.onrender.com` (Your Render backend URL)
-5. Click **Deploy**.
-
----
-
 ## 📡 REST API Reference
 
 ### `POST /api/process-complaint`
